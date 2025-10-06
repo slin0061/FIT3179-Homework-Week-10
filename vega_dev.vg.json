@@ -1,0 +1,32 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Sanity check: GDP per capita (2022) by country. No lookups.",
+  "width": 800,
+  "height": 900,
+  "data": {
+    "url": "https://raw.githubusercontent.com/slin0061/FIT3179-Homework-Week-10/main/data/API_NY.GDP.PCAP.CD_DS2_en_csv_v2_1233921.csv",
+    "format": {"type": "csv"}
+  },
+  "transform": [
+    {"calculate": "datum['Country Name']", "as": "country"},
+    {"calculate": "datum['Country Code']", "as": "code"},
+    {
+      "calculate": "isValid(datum['2022']) ? toNumber(datum['2022']) : (isValid(datum['2022 [YR2022]']) ? toNumber(datum['2022 [YR2022]']) : null)",
+      "as": "gdp_pc"
+    },
+    {"filter": "isValid(datum.country) && isValid(datum.code)"},
+    {"filter": "isValid(datum.gdp_pc) && isFinite(datum.gdp_pc) && datum.gdp_pc > 0"},
+    {"window": [{"op": "rank", "as": "rk"}], "sort": [{"field": "gdp_pc", "order": "descending"}]},
+    {"filter": "datum.rk <= 50"}
+  ],
+  "mark": {"type": "bar"},
+  "encoding": {
+    "y": {"field": "country", "type": "nominal", "sort": "-x", "title": "Country"},
+    "x": {"field": "gdp_pc", "type": "quantitative", "title": "GDP per capita (2022, US$)", "axis": {"format": "$,.0f"}},
+    "tooltip": [
+      {"field": "country", "title": "Country"},
+      {"field": "code", "title": "ISO"},
+      {"field": "gdp_pc", "type": "quantitative", "title": "GDP per capita", "format": "$,.0f"}
+    ]
+  }
+}
