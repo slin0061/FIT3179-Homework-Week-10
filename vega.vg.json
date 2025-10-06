@@ -1,11 +1,11 @@
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "description": "GDP per capita vs Country with point size = Population. Data joined from two World Bank CSVs by ISO Country Code. Includes a population slider and two text annotations.",
+  "description": "Scatter plot showing GDP per capita by country with point size mapped to population. Data joined from two CSVs on GitHub by ISO Country Code. Includes year selector, population slider, tooltips, and annotations.",
   "width": 900,
   "height": 580,
 
   "data": {
-    "url": "data/API_NY.GDP.PCAP.CD_DS2_en_csv_v2_1233921.csv",
+    "url": "https://raw.githubusercontent.com/slin0061/FIT3179-Homework-Week-10/main/data/API_NY.GDP.PCAP.CD_DS2_en_csv_v2_1233921.csv",
     "format": { "type": "csv" }
   },
 
@@ -35,41 +35,47 @@
   "transform": [
     { "calculate": "datum['Country Name']", "as": "country" },
     { "calculate": "datum['Country Code']", "as": "code" },
-
     { "filter": "datum['Indicator Code'] == 'NY.GDP.PCAP.CD' && isValid(datum.country) && isValid(datum.code)" },
-
     {
       "calculate": "isValid(datum[toString(yearParam)]) ? toNumber(datum[toString(yearParam)]) : (isValid(datum[toString(yearParam) + ' [YR' + toString(yearParam) + ']']) ? toNumber(datum[toString(yearParam) + ' [YR' + toString(yearParam) + ']']) : null)",
       "as": "gdp_per_capita"
     },
-
     {
       "lookup": "code",
       "from": {
         "data": {
-          "url": "data/API_SP.POP.TOTL_DS2_en_csv_v2_1233981.csv",
+          "url": "https://raw.githubusercontent.com/slin0061/FIT3179-Homework-Week-10/main/data/API_SP.POP.TOTL_DS2_en_csv_v2_1233981.csv",
           "format": { "type": "csv" }
         },
-        "key": "Country Code"
+        "key": "Country Code",
+        "fields": [
+          "Indicator Code", "2023", "2022", "2021", "2020", "2019",
+          "2015", "2010", "2005", "2000",
+          "2023 [YR2023]", "2022 [YR2022]", "2021 [YR2021]",
+          "2020 [YR2020]", "2019 [YR2019]", "2015 [YR2015]",
+          "2010 [YR2010]", "2005 [YR2005]", "2000 [YR2000]"
+        ]
       },
-      "as": "pop"
+      "as": [
+        "pop_indicator", "p2023", "p2022", "p2021", "p2020", "p2019",
+        "p2015", "p2010", "p2005", "p2000",
+        "p2023_lbl", "p2022_lbl", "p2021_lbl", "p2020_lbl",
+        "p2019_lbl", "p2015_lbl", "p2010_lbl", "p2005_lbl", "p2000_lbl"
+      ]
     },
-
-
-    { "filter": "pop && pop['Indicator Code'] == 'SP.POP.TOTL'" },
-
+    { "filter": "datum.pop_indicator == 'SP.POP.TOTL'" },
     {
-      "calculate": "isValid(pop[toString(yearParam)]) ? toNumber(pop[toString(yearParam)]) : (isValid(pop[toString(yearParam) + ' [YR' + toString(yearParam) + ']']) ? toNumber(pop[toString(yearParam) + ' [YR' + toString(yearParam) + ']']) : null)",
+      "calculate": "yearParam==2023 ? (isValid(datum.p2023) ? toNumber(datum.p2023) : toNumber(datum['p2023_lbl'])) : yearParam==2022 ? (isValid(datum.p2022) ? toNumber(datum.p2022) : toNumber(datum['p2022_lbl'])) : yearParam==2021 ? (isValid(datum.p2021) ? toNumber(datum.p2021) : toNumber(datum['p2021_lbl'])) : yearParam==2020 ? (isValid(datum.p2020) ? toNumber(datum.p2020) : toNumber(datum['p2020_lbl'])) : yearParam==2019 ? (isValid(datum.p2019) ? toNumber(datum.p2019) : toNumber(datum['p2019_lbl'])) : yearParam==2015 ? (isValid(datum.p2015) ? toNumber(datum.p2015) : toNumber(datum['p2015_lbl'])) : yearParam==2010 ? (isValid(datum.p2010) ? toNumber(datum.p2010) : toNumber(datum['p2010_lbl'])) : yearParam==2005 ? (isValid(datum.p2005) ? toNumber(datum.p2005) : toNumber(datum['p2005_lbl'])) : (isValid(datum.p2000) ? toNumber(datum.p2000) : toNumber(datum['p2000_lbl']))",
       "as": "population"
     },
-
+    { "calculate": "toString(yearParam)", "as": "year" },
     { "filter": "isValid(datum.gdp_per_capita) && isFinite(datum.gdp_per_capita) && datum.gdp_per_capita > 0" },
     { "filter": "isValid(datum.population) && isFinite(datum.population) && datum.population > popMin" }
   ],
 
   "layer": [
     {
-      "mark": { "type": "circle", "opacity": 0.8 },
+      "mark": { "type": "circle", "opacity": 0.85 },
       "encoding": {
         "x": {
           "field": "gdp_per_capita",
@@ -93,23 +99,12 @@
         "tooltip": [
           { "field": "country", "type": "nominal", "title": "Country" },
           { "field": "code", "type": "nominal", "title": "ISO Code" },
-          {
-            "field": "gdp_per_capita",
-            "type": "quantitative",
-            "title": "GDP per capita",
-            "format": "$,.0f"
-          },
-          {
-            "field": "population",
-            "type": "quantitative",
-            "title": "Population",
-            "format": ",.0f"
-          },
-          { "field": "yearParam", "type": "nominal", "title": "Year" }
+          { "field": "gdp_per_capita", "type": "quantitative", "title": "GDP per capita", "format": "$,.0f" },
+          { "field": "population", "type": "quantitative", "title": "Population", "format": ",.0f" },
+          { "field": "year", "type": "nominal", "title": "Year" }
         ]
       }
     },
-
     {
       "transform": [
         { "window": [{ "op": "rank", "as": "r_desc" }], "sort": [{ "field": "gdp_per_capita", "order": "descending" }] },
@@ -123,7 +118,6 @@
         "color": { "value": "black" }
       }
     },
-
     {
       "transform": [
         { "window": [{ "op": "rank", "as": "r_asc" }], "sort": [{ "field": "gdp_per_capita", "order": "ascending" }] },
