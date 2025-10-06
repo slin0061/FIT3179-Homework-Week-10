@@ -1,0 +1,147 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "GDP per capita vs Country with point size = Population. Data joined from two World Bank CSVs by ISO Country Code. Includes a population slider and two text annotations.",
+  "width": 900,
+  "height": 580,
+
+  "data": {
+    "url": "data/API_NY.GDP.PCAP.CD_DS2_en_csv_v2_1233921.csv",
+    "format": { "type": "csv" }
+  },
+
+  "params": [
+    {
+      "name": "yearParam",
+      "value": 2022,
+      "bind": {
+        "input": "select",
+        "name": "Year: ",
+        "options": [2023, 2022, 2021, 2020, 2019, 2015, 2010, 2005, 2000]
+      }
+    },
+    {
+      "name": "popMin",
+      "value": 0,
+      "bind": {
+        "input": "range",
+        "name": "Min population: ",
+        "min": 0,
+        "max": 1500000000,
+        "step": 1000000
+      }
+    }
+  ],
+
+  "transform": [
+    { "calculate": "datum['Country Name']", "as": "country" },
+    { "calculate": "datum['Country Code']", "as": "code" },
+
+    { "filter": "datum['Indicator Code'] == 'NY.GDP.PCAP.CD' && isValid(datum.country) && isValid(datum.code)" },
+
+    {
+      "calculate": "isValid(datum[toString(yearParam)]) ? toNumber(datum[toString(yearParam)]) : (isValid(datum[toString(yearParam) + ' [YR' + toString(yearParam) + ']']) ? toNumber(datum[toString(yearParam) + ' [YR' + toString(yearParam) + ']']) : null)",
+      "as": "gdp_per_capita"
+    },
+
+    {
+      "lookup": "code",
+      "from": {
+        "data": {
+          "url": "data/API_SP.POP.TOTL_DS2_en_csv_v2_1233981.csv",
+          "format": { "type": "csv" }
+        },
+        "key": "Country Code"
+      },
+      "as": "pop"
+    },
+
+
+    { "filter": "pop && pop['Indicator Code'] == 'SP.POP.TOTL'" },
+
+    {
+      "calculate": "isValid(pop[toString(yearParam)]) ? toNumber(pop[toString(yearParam)]) : (isValid(pop[toString(yearParam) + ' [YR' + toString(yearParam) + ']']) ? toNumber(pop[toString(yearParam) + ' [YR' + toString(yearParam) + ']']) : null)",
+      "as": "population"
+    },
+
+    { "filter": "isValid(datum.gdp_per_capita) && isFinite(datum.gdp_per_capita) && datum.gdp_per_capita > 0" },
+    { "filter": "isValid(datum.population) && isFinite(datum.population) && datum.population > popMin" }
+  ],
+
+  "layer": [
+    {
+      "mark": { "type": "circle", "opacity": 0.8 },
+      "encoding": {
+        "x": {
+          "field": "gdp_per_capita",
+          "type": "quantitative",
+          "title": "GDP per capita (current US$)",
+          "axis": { "format": "$,.0f" }
+        },
+        "y": {
+          "field": "country",
+          "type": "nominal",
+          "title": "Country",
+          "sort": "-x"
+        },
+        "size": {
+          "field": "population",
+          "type": "quantitative",
+          "title": "Population (total)",
+          "legend": { "format": ",.0f" }
+        },
+        "color": { "value": "#4C78A8" },
+        "tooltip": [
+          { "field": "country", "type": "nominal", "title": "Country" },
+          { "field": "code", "type": "nominal", "title": "ISO Code" },
+          {
+            "field": "gdp_per_capita",
+            "type": "quantitative",
+            "title": "GDP per capita",
+            "format": "$,.0f"
+          },
+          {
+            "field": "population",
+            "type": "quantitative",
+            "title": "Population",
+            "format": ",.0f"
+          },
+          { "field": "yearParam", "type": "nominal", "title": "Year" }
+        ]
+      }
+    },
+
+    {
+      "transform": [
+        { "window": [{ "op": "rank", "as": "r_desc" }], "sort": [{ "field": "gdp_per_capita", "order": "descending" }] },
+        { "filter": "datum.r_desc == 1" }
+      ],
+      "mark": { "type": "text", "align": "left", "baseline": "middle", "dx": 8, "fontWeight": "bold" },
+      "encoding": {
+        "x": { "field": "gdp_per_capita", "type": "quantitative" },
+        "y": { "field": "country", "type": "nominal" },
+        "text": { "value": "Highest GDP per capita" },
+        "color": { "value": "black" }
+      }
+    },
+
+    {
+      "transform": [
+        { "window": [{ "op": "rank", "as": "r_asc" }], "sort": [{ "field": "gdp_per_capita", "order": "ascending" }] },
+        { "filter": "datum.r_asc == 1" }
+      ],
+      "mark": { "type": "text", "align": "right", "baseline": "middle", "dx": -8, "fontWeight": "bold" },
+      "encoding": {
+        "x": { "field": "gdp_per_capita", "type": "quantitative" },
+        "y": { "field": "country", "type": "nominal" },
+        "text": { "value": "Lowest GDP per capita" },
+        "color": { "value": "black" }
+      }
+    }
+  ],
+
+  "config": {
+    "axis": { "labelFontSize": 11, "titleFontSize": 12 },
+    "legend": { "titleFontWeight": "bold" },
+    "view": { "stroke": null }
+  }
+}
