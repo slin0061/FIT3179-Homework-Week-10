@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>FIT3179 — GDP per capita Visualisations</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Vega libraries (order matters) -->
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+
+  <style>
+    :root {
+      --maxw: 1000px;
+      --pad: 16px;
+      --card-radius: 14px;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: #0b1020;
+      color: #e9eef5;
+    }
+    .wrap {
+      max-width: var(--maxw);
+      margin: auto;
+      padding: calc(var(--pad) * 1.5) var(--pad) 64px;
+    }
+    header {
+      margin-bottom: 18px;
+      text-align: center;
+    }
+    h1 {
+      font-weight: 700;
+      font-size: clamp(22px, 2.4vw, 32px);
+      margin: 0 0 8px;
+    }
+    p.lead {
+      margin: 0 0 18px;
+      color: #b9c6d3;
+    }
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+    .card {
+      background: #101735;
+      border: 1px solid #1e2a55;
+      border-radius: var(--card-radius);
+      padding: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+    }
+    .card h2 {
+      margin: 6px 8px 10px;
+      font-size: 18px;
+      font-weight: 650;
+      color: #eaf2ff;
+      text-align: center;
+    }
+    .vis {
+      border-radius: 10px;
+      overflow: hidden;
+      min-height: 400px;
+      background: #0f142b;
+    }
+    .hint {
+      font-size: 13px;
+      color: #92a2b8;
+      margin: 6px 8px 0;
+      text-align: center;
+    }
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      color: #9fb0c2;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>GDP per capita Visualisations</h1>
+      <p class="lead">Interactive visualisations built with Vega-Lite. Hover for tooltips. Use the scatter’s controls to adjust year and population range.</p>
+    </header>
+
+    <section class="stack">
+      <!-- Map -->
+      <article class="card" aria-label="World map of GDP per capita">
+        <h2>World map — GDP per capita</h2>
+        <div id="map_vis" class="vis"></div>
+        <p class="hint">Source: World Bank. Projection and color scale defined in <code>GDP_per_capita_map.vg.json</code>.</p>
+      </article>
+
+      <!-- Scatter -->
+      <article class="card" aria-label="Scatter plot of GDP per capita with population bubble size">
+        <h2>Scatter — GDP per capita vs Country (bubble size = population)</h2>
+        <div id="scatter_vis" class="vis"></div>
+        <p class="hint">Year dropdown and population sliders are inside <code>GDP_per_capita.vg.json</code>.</p>
+      </article>
+    </section>
+
+    <footer>
+      <p>If hosting on GitHub Pages, keep JSON and data paths relative (e.g. <code>data/...</code>).  
+      If a chart doesn’t load, open the browser console for CORS or path errors.</p>
+    </footer>
+  </div>
+
+  <script>
+    const MAP_SPEC_URL = "./GDP_per_capita_map.vg.json";
+    const SCATTER_SPEC_URL = "./GDP_per_capita.vg.json";
+
+    const embedOpts = {
+      actions: {export: true, source: false, compiled: false, editor: false},
+      renderer: "canvas",
+      config: {
+        view: {stroke: null},
+        background: "#0f142b",
+        axis: {labelColor: "#dfe8f5", titleColor: "#e9eef5"},
+        legend: {labelColor: "#dfe8f5", titleColor: "#e9eef5"}
+      }
+    };
+
+    vegaEmbed("#map_vis", MAP_SPEC_URL, embedOpts)
+      .catch(err => {
+        console.error("Map embed error:", err);
+        document.getElementById("map_vis").textContent = "Failed to load map spec.";
+      });
+
+    vegaEmbed("#scatter_vis", SCATTER_SPEC_URL, embedOpts)
+      .catch(err => {
+        console.error("Scatter embed error:", err);
+        document.getElementById("scatter_vis").textContent = "Failed to load scatter spec.";
+      });
+  </script>
+</body>
+</html>
