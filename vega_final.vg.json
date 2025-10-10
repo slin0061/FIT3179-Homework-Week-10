@@ -1,6 +1,6 @@
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "description": "GDP per capita (log scale, y) vs Country (x) with point size = Population. Only countries displayed. Includes year dropdown and population range sliders.",
+  "description": "GDP per capita (log scale, y limited to $300,000) vs Country (x) with point size = Population. Only countries displayed. Includes year dropdown and population range sliders. Larger circles for visibility.",
   "width": {"step": 18},
   "height": 600,
   "data": {
@@ -81,7 +81,7 @@
 
   "layer": [
     {
-      "mark": {"type": "circle", "opacity": 0.9},
+      "mark": {"type": "circle", "opacity": 0.85},
       "encoding": {
         "x": {
           "field": "Country Name",
@@ -97,7 +97,7 @@
         "y": {
           "field": "gdp_pc",
           "type": "quantitative",
-          "scale": {"type": "log"},
+          "scale": {"type": "log", "domain": [100, 300000]},
           "title": "GDP per capita (US$, log scale)",
           "axis": {"format": "$,.0f"}
         },
@@ -105,9 +105,10 @@
           "field": "population",
           "type": "quantitative",
           "title": "Population",
+          "scale": {"range": [20, 2000]},
           "legend": {"format": ",.0f"}
         },
-        "color": {"value": "#4C78A8"},
+        "color": {"value": "#f24413"},
         "tooltip": [
           {"field": "Country Name", "title": "Country"},
           {"field": "Country Code", "title": "ISO"},
@@ -125,7 +126,7 @@
       "mark": {"type": "text", "align": "center", "baseline": "bottom", "dy": -6, "fontWeight": "bold"},
       "encoding": {
         "x": {"field": "Country Name", "type": "nominal", "sort": {"field": "gdp_pc", "order": "ascending"}},
-        "y": {"field": "gdp_pc", "type": "quantitative", "scale": {"type": "log"}},
+        "y": {"field": "gdp_pc", "type": "quantitative", "scale": {"type": "log", "domain": [100, 300000]}},
         "text": {"value": "Highest GDP per capita"},
         "color": {"value": "black"}
       }
@@ -138,7 +139,7 @@
       "mark": {"type": "text", "align": "center", "baseline": "top", "dy": 10, "fontWeight": "bold"},
       "encoding": {
         "x": {"field": "Country Name", "type": "nominal", "sort": {"field": "gdp_pc", "order": "ascending"}},
-        "y": {"field": "gdp_pc", "type": "quantitative", "scale": {"type": "log"}},
+        "y": {"field": "gdp_pc", "type": "quantitative", "scale": {"type": "log", "domain": [100, 300000]}},
         "text": {"value": "Lowest GDP per capita"},
         "color": {"value": "black"}
       }
