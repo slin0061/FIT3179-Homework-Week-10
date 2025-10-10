@@ -108,7 +108,7 @@
           "scale": {"range": [20, 2000]},
           "legend": {"format": ",.0f"}
         },
-        "color": {"value": "#4C78A8"},
+        "color": {"value": "#f24413"},
         "tooltip": [
           {"field": "Country Name", "title": "Country"},
           {"field": "Country Code", "title": "ISO"},
